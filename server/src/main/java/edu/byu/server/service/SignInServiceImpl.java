@@ -4,7 +4,8 @@ import edu.byu.model.services.SignInService;
 import edu.byu.model.services.request.SignInRequest;
 import edu.byu.model.services.response.SignInResponse;
 //import edu.byu.server.dao.FollowingDAO;
-import edu.byu.server.dao.UserDAOO;
+import edu.byu.server.dao.UserDAO;
+//import edu.byu.server.dao.UserDAOO;
 
 public class SignInServiceImpl implements SignInService {
 
@@ -13,7 +14,7 @@ public class SignInServiceImpl implements SignInService {
         return getUserDAO().getSignedInUserServerResponse(request);
     }
 
-    UserDAOO getUserDAO() {
-        return new UserDAOO();
+    UserDAO getUserDAO() {
+        return new UserDAO();
     }
 }

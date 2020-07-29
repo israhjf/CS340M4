@@ -15,7 +15,11 @@ import java.util.List;
 import java.util.Map;
 
 import edu.byu.model.domain.User;
+import edu.byu.model.services.request.SignInRequest;
+import edu.byu.model.services.request.SignOutRequest;
 import edu.byu.model.services.request.SignUpRequest;
+import edu.byu.model.services.response.SignInResponse;
+import edu.byu.model.services.response.SignOutResponse;
 import edu.byu.model.services.response.SignUpResponse;
 
 public class UserDAO {
@@ -69,6 +73,51 @@ public class UserDAO {
             System.err.println(e.getMessage());
             return new SignUpResponse(message);
         }
+    }
+
+    public SignInResponse getSignedInUserServerResponse(SignInRequest request){
+        Table table = dynamoDB.getTable(tableName);
+        GetItemSpec spec = new GetItemSpec().withPrimaryKey(primaryKey, request.userAlias);
+
+        try {
+            System.out.println("Attempting to read the item...");
+            Item item = table.getItem(spec);
+
+            if (item == null){
+                return new SignInResponse("User not found!!");
+            }
+
+            System.out.println("Adding a new item...");
+            String alias = item.getString(primaryKey);
+            String firstName = item.getString(userFirstNameAttr);
+            String lastName = item.getString(userLastNameAttr);
+            String password = item.getString(userHashedPasswordAttr);
+            String imageUrl = item.getString(userImageUrlAttr);
+
+            if (!request.password.equals(password)){
+                return new SignInResponse("Invalid password!");
+            }
+
+            System.out.println("SignIn succeeded:\n" + alias);
+            User user = new User(firstName, lastName, alias, imageUrl);
+            return new SignInResponse(user);
+        }
+        catch (Exception e) {
+            String message = String.format("Error while singing in: " + request.getUserAlias());
+            System.err.println(message);
+            System.err.println(e.getMessage());
+            return new SignInResponse(message);
+        }
+    }
+
+    public SignOutResponse getSignedOutUserServerResponse(SignOutRequest request){
+        SignOutResponse response;
+
+        User currentUser = new User("Test", "User",
+                "https://faculty.cs.byu.edu/~jwilkerson/cs340/tweeter/images/donald_duck.png");
+
+        response = new SignOutResponse(currentUser);
+        return response;
     }
 
     public void addUserBatch(List<User> users) {
