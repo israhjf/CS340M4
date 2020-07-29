@@ -6,7 +6,7 @@ import edu.byu.model.net.TweeterRemoteException;
 import edu.byu.model.services.SignOutService;
 import edu.byu.model.services.request.SignOutRequest;
 import edu.byu.model.services.response.SignOutResponse;
-import edu.byu.server.dao.SignInDAO;
+//import edu.byu.server.dao.SignInDAO;
 import edu.byu.server.dao.SignOutDAO;
 
 public class SignOutServiceImpl implements SignOutService {

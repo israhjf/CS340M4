@@ -122,12 +122,14 @@ public class FollowsDAO {
                 Item userItem = userTable.getItem(spec);
 
                 System.out.println("Adding a new item...");
-                String alias = userItem.getString(primaryKey);
+                String alias = userItem.getString("alias");
                 String firstName = userItem.getString(userFirstNameAttr);
                 String lastName = userItem.getString(userLastNameAttr);
                 String imageUrl = userItem.getString(userImageUrlAttr);
 
                 User user = new User(firstName, lastName, alias, imageUrl);
+                System.out.println(user.getAlias() + " " + user.getFirstName() + " " +
+                        user.getLastName());
                 followers.add(user);
             }
             if (queryResult.getLastEvaluatedKey() != null)
@@ -186,12 +188,15 @@ public class FollowsDAO {
                 Item userItem = userTable.getItem(spec);
 
                 System.out.println("Adding a new item...");
-                String alias = userItem.getString("follower_handle");
+                String alias = userItem.getString("alias");
                 String firstName = userItem.getString(userFirstNameAttr);
                 String lastName = userItem.getString(userLastNameAttr);
                 String imageUrl = userItem.getString(userImageUrlAttr);
 
                 User user = new User(firstName, lastName, alias, imageUrl);
+                System.out.println("FOLLOWEE about to be added: ");
+                System.out.println(user.getAlias() + " " + user.getFirstName() + " " +
+                        user.getLastName());
                 followees.add(user);
             }
             if (queryResult.getLastEvaluatedKey() != null)
