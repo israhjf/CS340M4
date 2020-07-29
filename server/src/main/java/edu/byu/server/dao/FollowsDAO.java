@@ -147,7 +147,6 @@ public class FollowsDAO {
 
         assert request.getLimit() > 0;
         assert request.getFollower() != null;
-
         boolean hasMorePages = false;
 
         //follows
@@ -194,9 +193,6 @@ public class FollowsDAO {
                 String imageUrl = userItem.getString(userImageUrlAttr);
 
                 User user = new User(firstName, lastName, alias, imageUrl);
-                System.out.println("FOLLOWEE about to be added: ");
-                System.out.println(user.getAlias() + " " + user.getFirstName() + " " +
-                        user.getLastName());
                 followees.add(user);
             }
             if (queryResult.getLastEvaluatedKey() != null)

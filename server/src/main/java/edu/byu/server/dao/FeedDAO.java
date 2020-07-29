@@ -26,6 +26,7 @@ import edu.byu.model.domain.User;
 import edu.byu.model.services.request.FeedRequest;
 import edu.byu.model.services.request.StatusRequest;
 import edu.byu.model.services.response.FeedResponse;
+import edu.byu.model.services.response.FollowingResponse;
 import edu.byu.model.services.response.StatusResponse;
 import edu.byu.model.services.response.StoryResponse;
 
@@ -48,87 +49,69 @@ public class FeedDAO {
     private static DynamoDB dynamoDB = new DynamoDB(client);
 
 
-    /***
-     * Feed Feature
-     * @param request
-     * @return
-     */
     public FeedResponse getFeedStatuses(FeedRequest request){
-
-        boolean hasMorePages = false;
 
         assert request.getLimit() > 0;
         assert request.getFeedUser() != null;
+        boolean hasMorePages = false;
 
-        /**
-         * Quering
-         */
-        Table userTable = dynamoDB.getTable("users");
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("alias",
-                request.getFeedUser().getAlias());
-        User user = null;
-        try {
-            System.out.println("Attempting to read the item...");
-            Item item = userTable.getItem(spec);
-
-            System.out.println("Adding a new item...");
-            String alias = item.getString(primaryKey);
-            String firstName = item.getString(userFirstNameAttr);
-            String lastName = item.getString(userLastNameAttr);
-            String imageUrl = item.getString(userImageUrlAttr);
-
-            user = new User(firstName, lastName, alias, imageUrl);
-        }
-        catch (Exception e) {
-            System.err.println("Error FeedDAO");
-            System.err.println(e.getMessage());
-        }
-
-        //Feeds
+        //Setting up the query
         HashMap<String, String> nameMap = new HashMap<>();
-        nameMap.put("#owner_alias", primaryKey);
+        nameMap.put("#feed_owner_alias", "feed_owner_alias");
 
         HashMap<String, AttributeValue> valueMap = new HashMap<>();
-        valueMap.put(":owner_alias", new AttributeValue().withS(request.getFeedUser().getAlias()));
+        valueMap.put(":feed_owner_alias", new AttributeValue().withS(request.getFeedUser().getAlias()));
 
         QueryRequest query = new QueryRequest()
-                .withTableName(tableName)
-                .withKeyConditionExpression("#owner_alias = :owner_alias")
+                .withTableName("feeds")
+                .withKeyConditionExpression("#feed_owner_alias = :feed_owner_alias")
                 .withExpressionAttributeNames(nameMap)
                 .withExpressionAttributeValues(valueMap)
                 .withLimit(request.getLimit());
 
         if (request.getLastStatus() != null) {
             Map<String, AttributeValue> tmp = new HashMap<>();
-            tmp.put(timestampAttr, new AttributeValue().withS(request.getLastStatus().timestamp));
-            tmp.put(primaryKey, new AttributeValue().withS(request.getLastStatus().getAuthor().getAlias()));
+            tmp.put("timestamp", new AttributeValue().withS(request.getLastStatus().getTimestamp()));
+            tmp.put("feed_owner_alias", new AttributeValue().withS(request.getLastStatus().getAuthor().getAlias()));
             query = query.withExclusiveStartKey(tmp);
         }
 
         List<Map<String, AttributeValue>> items = null;
-        List<Status> statuses = new ArrayList<>();
+        List<Status> feedStatuses = new ArrayList<>();
         try {
-            System.out.println("Statuses of: " + request.getFeedUser().getAlias());
             QueryResult queryResult = client.query(query);
             items = queryResult.getItems();
             for (Map<String, AttributeValue> item : items){
-                String alias = item.get(primaryKey).getS();
-                String timestamp = item.get(timestampAttr).getS();
-                String message = item.get(messageTextAttr).getS();
-                Status status = new Status(user, message, timestamp);
-                statuses.add(status);
+                String statusAlias = item.get("status_alias").getS();
+                String statusMessage = item.get("message_text").getS();
+                String timestamp = item.get("timestamp").getS();
+
+                //Query user
+                Table userTable = dynamoDB.getTable("users");
+                GetItemSpec spec = new GetItemSpec()
+                        .withPrimaryKey("alias", statusAlias);
+
+                System.out.println("Attempting to read the user...");
+                Item userItem = userTable.getItem(spec);
+
+                String alias = userItem.getString("alias");
+                String firstName = userItem.getString(userFirstNameAttr);
+                String lastName = userItem.getString(userLastNameAttr);
+                String imageUrl = userItem.getString(userImageUrlAttr);
+
+                User author = new User(firstName, lastName, alias, imageUrl);
+                Status status = new Status(author, statusMessage, timestamp);
+                feedStatuses.add(status);
             }
             if (queryResult.getLastEvaluatedKey() != null)
                 hasMorePages = true;
-
-
         }
         catch (Exception e) {
-            System.err.println("Unable to query FEED statuses");
+            System.err.println("Unable to query items");
             System.err.println(e.getMessage());
         }
 
-        return new FeedResponse(statuses, hasMorePages);
+        return new FeedResponse(feedStatuses, hasMorePages);
     }
 
     private int getStatusesStartingIndex(Status lastStatus, List<Status> allStatuses) {

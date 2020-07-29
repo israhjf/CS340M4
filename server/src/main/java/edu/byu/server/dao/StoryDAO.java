@@ -24,6 +24,7 @@ import edu.byu.model.domain.Status;
 import edu.byu.model.domain.User;
 import edu.byu.model.services.request.StatusRequest;
 import edu.byu.model.services.request.StoryRequest;
+import edu.byu.model.services.response.FeedResponse;
 import edu.byu.model.services.response.SignInResponse;
 import edu.byu.model.services.response.StatusResponse;
 import edu.byu.model.services.response.StoryResponse;
@@ -53,43 +54,18 @@ public class StoryDAO {
      */
     public StoryResponse getStoryStatuses(StoryRequest request){
         boolean hasMorePages = false;
-
         assert request.getLimit() > 0;
         assert request.getStoryUser() != null;
 
-        /**
-         * Quering
-         */
-        Table userTable = dynamoDB.getTable("users");
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("alias",
-                request.storyUser.getAlias());
-        User user = null;
-        try {
-            System.out.println("Attempting to read the item...");
-            Item item = userTable.getItem(spec);
-
-            System.out.println("Adding a new item...");
-            String alias = item.getString(primaryKey);
-            String firstName = item.getString(userFirstNameAttr);
-            String lastName = item.getString(userLastNameAttr);
-            String imageUrl = item.getString(userImageUrlAttr);
-
-            user = new User(firstName, lastName, alias, imageUrl);
-        }
-        catch (Exception e) {
-            System.err.println("Error StoryDAO");
-            System.err.println(e.getMessage());
-        }
-
-        //Stories
+        //Setting up the query
         HashMap<String, String> nameMap = new HashMap<>();
-        nameMap.put("#alias", primaryKey);
+        nameMap.put("#alias", "alias");
 
         HashMap<String, AttributeValue> valueMap = new HashMap<>();
         valueMap.put(":alias", new AttributeValue().withS(request.getStoryUser().getAlias()));
 
         QueryRequest query = new QueryRequest()
-                .withTableName(tableName)
+                .withTableName("stories")
                 .withKeyConditionExpression("#alias = :alias")
                 .withExpressionAttributeNames(nameMap)
                 .withExpressionAttributeValues(valueMap)
@@ -97,35 +73,47 @@ public class StoryDAO {
 
         if (request.getLastStatus() != null) {
             Map<String, AttributeValue> tmp = new HashMap<>();
-            tmp.put(timestampAttr, new AttributeValue().withS(request.getLastStatus().timestamp));
-            tmp.put(primaryKey, new AttributeValue().withS(request.getLastStatus().getAuthor().getAlias()));
+            tmp.put("timestamp", new AttributeValue().withS(request.getLastStatus().getTimestamp()));
+            tmp.put("alias", new AttributeValue().withS(request.getLastStatus().getAuthor().getAlias()));
             query = query.withExclusiveStartKey(tmp);
         }
 
         List<Map<String, AttributeValue>> items = null;
-        List<Status> statuses = new ArrayList<>();
+        List<Status> storyStatuses = new ArrayList<>();
         try {
-            System.out.println("Statuses of: " + request.getStoryUser().getAlias());
             QueryResult queryResult = client.query(query);
             items = queryResult.getItems();
             for (Map<String, AttributeValue> item : items){
-                String alias = item.get(primaryKey).getS();
-                String timestamp = item.get(timestampAttr).getS();
-                String message = item.get(messageTextAttr).getS();
-                Status status = new Status(user, message, timestamp);
-                statuses.add(status);
+                String statusAlias = item.get("alias").getS();
+                String statusMessage = item.get("message_text").getS();
+                String timestamp = item.get("timestamp").getS();
+
+                //Query user
+                Table userTable = dynamoDB.getTable("users");
+                GetItemSpec spec = new GetItemSpec()
+                        .withPrimaryKey("alias", statusAlias);
+
+                System.out.println("Attempting to read the user...");
+                Item userItem = userTable.getItem(spec);
+
+                String alias = userItem.getString("alias");
+                String firstName = userItem.getString(userFirstNameAttr);
+                String lastName = userItem.getString(userLastNameAttr);
+                String imageUrl = userItem.getString(userImageUrlAttr);
+
+                User author = new User(firstName, lastName, alias, imageUrl);
+                Status status = new Status(author, statusMessage, timestamp);
+                storyStatuses.add(status);
             }
             if (queryResult.getLastEvaluatedKey() != null)
                 hasMorePages = true;
-
-
         }
         catch (Exception e) {
-            System.err.println("Unable to query STORY statuses");
+            System.err.println("Unable to query items");
             System.err.println(e.getMessage());
         }
 
-        return new StoryResponse(statuses, hasMorePages);
+        return new StoryResponse(storyStatuses, hasMorePages);
     }
 
         private int getStatusesStartingIndex(Status lastStatus, List<Status> allStatuses) {
