@@ -141,7 +141,7 @@ public class FeedDAO {
             System.out.println("Adding a new status...");
 
             //Uploading to PostStatusQueue
-            String messageBody = "*** This is the second message to queue340 ***";
+            String messageBody = request.getMessage();
             String postStatusQueueUrl = "https://sqs.us-west-2.amazonaws.com/764200764125/PostStatusQueue";
 
             //Adding attributes

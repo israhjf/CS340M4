@@ -206,8 +206,38 @@ public class FollowsDAO {
         return new FollowingResponse(followees, hasMorePages);
     }
 
+    public List<String> getAllFollowersAliases(String followeeAlias){
+        List<String> followersAliases = new ArrayList<>();
 
+        //follows
+        HashMap<String, String> nameMap = new HashMap<>();
+        nameMap.put("#followee_handle", primaryKey);
 
+        HashMap<String, AttributeValue> valueMap = new HashMap<>();
+        valueMap.put(":followee_handle", new AttributeValue().withS(followeeAlias));
+
+        QueryRequest query = new QueryRequest()
+                .withTableName(followsTableName)
+                .withIndexName("follows_index")
+                .withKeyConditionExpression("#followee_handle = :followee_handle")
+                .withExpressionAttributeNames(nameMap)
+                .withExpressionAttributeValues(valueMap);
+
+        List<Map<String, AttributeValue>> items = null;
+        try {
+            QueryResult queryResult = client.query(query);
+            items = queryResult.getItems();
+            for (Map<String, AttributeValue> item : items){
+                String followerAlias = item.get(sortKeyIndex).getS();
+                followersAliases.add(followerAlias);
+            }
+        }
+        catch (Exception e) {
+            System.err.println("Unable to query items");
+            System.err.println(e.getMessage());
+        }
+        return followersAliases;
+    }
 
     public void addFollowersBatch(List<String> followers, String followTarget) {
         // Constructor for TableWriteItems takes the name of the table, which I have stored in TABLE_USER
