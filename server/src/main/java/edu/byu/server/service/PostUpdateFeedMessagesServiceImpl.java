@@ -9,8 +9,6 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import edu.byu.model.domain.User;
-import edu.byu.model.services.response.StatusResponse;
 import edu.byu.server.dao.FollowsDAO;
 
 public class PostUpdateFeedMessagesServiceImpl {
@@ -18,11 +16,11 @@ public class PostUpdateFeedMessagesServiceImpl {
     public void postUpdateFeedMessages(SQSEvent.SQSMessage msg){
         String message_text = msg.getBody();
 
-        final Map<String, String> messageAttributesStatus;
+        final Map<String, SQSEvent.MessageAttribute> messageAttributesStatus;
         messageAttributesStatus = msg.getMessageAttributes();
 
-        String status_alias = messageAttributesStatus.get("status_alias");
-        String status_timestamp = messageAttributesStatus.get("timestamp");
+        String status_alias = messageAttributesStatus.get("status_alias").getStringValue();
+        String status_timestamp = messageAttributesStatus.get("timestamp").getStringValue();
 
         System.out.println("PostUpdate LAMBDA: " + status_alias + " " + status_timestamp
                 + " " + message_text);

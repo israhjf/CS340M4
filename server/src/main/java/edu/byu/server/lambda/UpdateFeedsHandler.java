@@ -5,16 +5,16 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import edu.byu.server.service.PostUpdateFeedMessagesServiceImpl;
 import edu.byu.server.service.UpdateFeedsServiceImpl;
 
-public class PostUpdateFeedMessagesHandler implements RequestHandler<SQSEvent, Void> {
+public class UpdateFeedsHandler implements RequestHandler<SQSEvent, Void> {
     @Override
     public Void handleRequest(SQSEvent event, Context context) {
-        PostUpdateFeedMessagesServiceImpl service;
+        UpdateFeedsServiceImpl service;
         try{
-            service = new PostUpdateFeedMessagesServiceImpl();
+            service = new UpdateFeedsServiceImpl();
 
             for (SQSEvent.SQSMessage msg : event.getRecords()) {
                 System.out.println(new String(msg.getBody()));
-                service.postUpdateFeedMessages(msg);
+                service.updateFeeds(msg);
             }
         }
         catch (Exception e){

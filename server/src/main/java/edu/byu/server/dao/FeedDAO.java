@@ -165,13 +165,6 @@ public class FeedDAO {
 
             String msgId = send_msg_result.getMessageId();
             System.out.println("Message ID: " + msgId);
-
-//            PutItemOutcome item = table.putItem(new Item()
-//                    .withPrimaryKey(primaryKey, request.getAuthor().getAlias())
-//                    .withString(timestampAttr, request.getPostTimeStamp())
-//                    .withString(messageTextAttr, request.getMessage()));
-
-//            System.out.println("PutItem succeeded:\n" + item.getPutItemResult());
             System.out.println("PutItem on PostStatusQueue succeeded");
             return new StatusResponse(true);
         }
@@ -180,6 +173,28 @@ public class FeedDAO {
             System.err.println(message);
             System.err.println(e.getMessage());
             return new StatusResponse(message);
+        }
+    }
+
+    public void updateFollowerFeed(String feedOwnerAlias, String messageText,
+                                   String timestamp, String statusAlias){
+
+        Table table = dynamoDB.getTable(tableName);
+
+        try {
+            System.out.println("Adding a new status...");
+            PutItemOutcome item = table.putItem(new Item()
+                    .withPrimaryKey("feed_owner_alias", feedOwnerAlias)
+                    .withString(timestampAttr, timestamp)
+                    .withString(messageTextAttr, messageText)
+                    .withString(statusAliasAttr, statusAlias));
+
+            System.out.println("PutItem succeeded:\n" + item.getPutItemResult());
+        }
+        catch (Exception e) {
+            String message = String.format("Unable to add item feed: " + feedOwnerAlias);
+            System.err.println(message);
+            System.err.println(e.getMessage());
         }
     }
 }
