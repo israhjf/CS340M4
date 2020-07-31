@@ -1,21 +1,59 @@
 package edu.byu.server.dao;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import edu.byu.model.domain.Status;
+import edu.byu.model.domain.User;
+import edu.byu.model.services.request.SignUpRequest;
+import edu.byu.model.services.request.StatusRequest;
+import edu.byu.model.services.request.StoryRequest;
+import edu.byu.model.services.response.SignUpResponse;
+import edu.byu.model.services.response.StatusResponse;
+import edu.byu.model.services.response.StoryResponse;
 
-class StoryDAOTest {
+import static org.junit.Assert.*;
 
-    @BeforeEach
-    void setUp() {
+public class StoryDAOTest {
+    StoryDAO storyDAO;
+    User dummyUser;
+    Status dummyStatus;
+
+    String userAlias;
+    String password;
+    String firstName;
+    String lastName;
+    String imageUrl;
+
+    @Before
+    public void setUp() throws Exception {
+        storyDAO = new StoryDAO();
+        userAlias = "@userDao";
+        password = "userDao_password";
+        firstName = "userDao";
+        lastName = "userDao";
+        imageUrl = "userDao_imageUrl";
+        dummyUser = new User(firstName, lastName, userAlias, imageUrl);
+        dummyStatus = new Status(dummyUser, "dummyMessage", "dummyTimestamp");
+
     }
 
     @Test
-    void getStoryStatuses() {
+    public void getStoryStatuses() {
+        StoryRequest request = new StoryRequest(dummyUser, 10, null);
+
+        StoryResponse response = storyDAO.getStoryStatuses(request);
+
+        assertNotNull(response);
     }
 
     @Test
-    void submitStatusRequest() {
+    public void submitStatusRequest() {
+        StatusRequest request = new StatusRequest(dummyUser, "dummyMessage",
+                "dummyTimestamp");
+
+        StatusResponse response = storyDAO.submitStatusRequest(request);
+
+        assertNotNull(response);
     }
 }
