@@ -20,9 +20,9 @@ class FollowHandlerTest {
 
     @BeforeEach
     void setUp() {
-        User newFollower1 = new User("User1", "Test1",
+        User newFollower1 = new User("test1", "test", "@test1",
                 "https://faculty.cs.byu.edu/~jwilkerson/cs340/tweeter/json/mnames.json");
-        User newFollower2 = new User("User2", "Test2",
+        User newFollower2 = new User("test2", "test", "@test2",
                 "https://faculty.cs.byu.edu/~jwilkerson/cs340/tweeter/json/mnames.json");
         request = new FollowRequest(newFollower1, newFollower2);
     }
@@ -30,7 +30,7 @@ class FollowHandlerTest {
     @Test
     void handleRequest() {
         FollowHandler followHandler = new FollowHandler();
-        FollowResponse response = followHandler.handleRequest(request, this.context);
+        FollowResponse response = followHandler.handleRequest(request, null);
 
         assertTrue(response.success);
     }

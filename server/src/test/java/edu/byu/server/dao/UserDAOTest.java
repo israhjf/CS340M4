@@ -1,15 +1,11 @@
 package edu.byu.server.dao;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import edu.byu.model.services.request.SignInRequest;
 import edu.byu.model.services.request.SignUpRequest;
 import edu.byu.model.services.response.SignUpResponse;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-class UserDAOTest {
+public class UserDAOTest {
     UserDAO userDAO;
 
     String userAlias;
@@ -18,8 +14,8 @@ class UserDAOTest {
     String lastName;
     String imageUrl;
 
-    @BeforeEach
-    void setUp() {
+    @org.junit.Before
+    public void setUp() throws Exception {
         userDAO = new UserDAO();
         userAlias = "@userDao";
         password = "userDao_password";
@@ -28,8 +24,8 @@ class UserDAOTest {
         imageUrl = "userDao_imageUrl";
     }
 
-    @Test
-    void getSignedUpUserServerResponse() {
+    @org.junit.Test
+    public void getSignedUpUserServerResponse() {
         SignUpRequest request = new SignUpRequest(userAlias, password,
                 firstName, lastName, imageUrl);
 
@@ -38,11 +34,11 @@ class UserDAOTest {
         assertNotNull(response);
     }
 
-    @Test
-    void getSignedInUserServerResponse() {
+    @org.junit.Test
+    public void getSignedInUserServerResponse() {
     }
 
-    @Test
-    void getSignedOutUserServerResponse() {
+    @org.junit.Test
+    public void getSignedOutUserServerResponse() {
     }
 }
