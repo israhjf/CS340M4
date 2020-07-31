@@ -21,6 +21,7 @@ public class PostUpdateFeedMessagesServiceImpl {
 
         final Map<String, SQSEvent.MessageAttribute> messageAttributesStatus;
         messageAttributesStatus = msg.getMessageAttributes();
+        int messageId = 0;
 
         final AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
 
@@ -37,6 +38,7 @@ public class PostUpdateFeedMessagesServiceImpl {
         List<SendMessageBatchRequestEntry> entriesList = new ArrayList<SendMessageBatchRequestEntry>();
         //Create UpdatefeedRequest and submit to UpdateFeedQueue
         for (String followerAlias : followersAliases) {
+            messageId++;
             System.out.println("PostUpdate LAMBDA follower alias: " + followerAlias);
             try {
                 System.out.println("Adding a new status...");
@@ -57,7 +59,7 @@ public class PostUpdateFeedMessagesServiceImpl {
                 SendMessageBatchRequestEntry send_msg_request_entry = new SendMessageBatchRequestEntry()
                         .withMessageBody(message_text)
                         .withMessageAttributes(messageAttributes)
-                        .withId(status_alias);
+                        .withId("msg" + messageId);
                 System.out.println("PostUpdateLambda: created Entry succesful");
 
                 entriesList.add(send_msg_request_entry);
