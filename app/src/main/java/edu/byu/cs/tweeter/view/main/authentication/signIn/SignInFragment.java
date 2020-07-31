@@ -13,8 +13,15 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import java.security.SecureRandom;
+import java.security.spec.KeySpec;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
 import edu.byu.cs.tweeter.R;
 import edu.byu.cs.tweeter.presenter.SignInPresenter;
+import edu.byu.cs.tweeter.util.Pbkdf2;
 import edu.byu.cs.tweeter.view.asyncTasks.SignInTask;
 import edu.byu.cs.tweeter.view.main.MainActivity;
 import edu.byu.model.services.request.SignInRequest;
@@ -58,10 +65,12 @@ public class SignInFragment extends Fragment implements SignInPresenter.View {
         loadingBar.setMessage("Please Wait!!");
         loadingBar.show();
         loadingBar.setCanceledOnTouchOutside(true);
+        Pbkdf2 pbkdf2_hasher = new Pbkdf2();
 
         try {
             if (!userAlias.isEmpty() && !password.isEmpty()) {
-                SignInRequest signInRequest = new SignInRequest(userAlias, password);
+                String hashedPassword = pbkdf2_hasher.hashPassword(password, "salt");
+                SignInRequest signInRequest = new SignInRequest(userAlias, hashedPassword);
                 SignInTask task = new SignInTask(presenter);
                 task.execute(signInRequest);
             } else {

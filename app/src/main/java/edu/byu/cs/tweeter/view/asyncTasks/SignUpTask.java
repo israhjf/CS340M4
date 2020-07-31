@@ -23,7 +23,7 @@ public class SignUpTask extends AsyncTask<SignUpRequest, Void, SignUpResponse> {
         SignUpResponse response = null;
         try {
             response = presenter.signUpUser(signUpRequests[0]);
-        } catch (IOException e) {
+         } catch (IOException e) {
             e.printStackTrace();
         } catch (TweeterRemoteException e) {
             e.printStackTrace();

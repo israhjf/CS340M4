@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.List;
+
 import edu.byu.cs.tweeter.presenter.FollowingPresenter;
 import edu.byu.cs.tweeter.view.cache.ImageCache;
 import edu.byu.cs.tweeter.view.util.ImageUtils;
@@ -66,18 +68,20 @@ public class GetFollowingTask extends AsyncTask<FollowingRequest, Void, Followin
      * @param response the response from the followee request.
      */
     private void loadImages(FollowingResponse response) {
-        for(User user : response.getFollowees()) {
+        if (response != null) {
+            for (User user : response.getFollowees()) {
 
-            Drawable drawable;
+                Drawable drawable;
 
-            try {
-                drawable = ImageUtils.drawableFromUrl(user.getImageUrl());
-            } catch (IOException e) {
-                Log.e(this.getClass().getName(), e.toString(), e);
-                drawable = null;
+                try {
+                    drawable = ImageUtils.drawableFromUrl(user.getImageUrl());
+                } catch (IOException e) {
+                    Log.e(this.getClass().getName(), e.toString(), e);
+                    drawable = null;
+                }
+
+                ImageCache.getInstance().cacheImage(user, drawable);
             }
-
-            ImageCache.getInstance().cacheImage(user, drawable);
         }
     }
 

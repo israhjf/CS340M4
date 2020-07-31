@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import edu.byu.cs.tweeter.R;
+import edu.byu.cs.tweeter.util.Pbkdf2;
 
 public class SignUpFragment extends Fragment {
     private static final String TAG = "SingUpFragment";
@@ -71,8 +72,11 @@ public class SignUpFragment extends Fragment {
         Intent intent = new Intent(getActivity(), RegisterUser.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         Bundle bundle = new Bundle();
+        Pbkdf2 pbkdf2_hasher = new Pbkdf2();
+        String hashedPassword = pbkdf2_hasher.hashPassword(password, "salt");
+
         bundle.putString("userAlias", userAlias);
-        bundle.putString("password", password);
+        bundle.putString("password", hashedPassword);
         intent.putExtras(bundle);
         startActivity(intent);
     }

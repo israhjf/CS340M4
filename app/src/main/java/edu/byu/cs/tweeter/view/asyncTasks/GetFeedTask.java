@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.List;
 
 
 import edu.byu.cs.tweeter.presenter.FeedPresenter;
@@ -43,17 +44,19 @@ public class GetFeedTask extends AsyncTask<FeedRequest, Void, FeedResponse> {
     }
 
     private void loadImages(FeedResponse response) {
-        for(edu.byu.model.domain.Status status : response.getFeedStatuses()) {
-            Drawable drawable;
+        if (response != null) {
+            for (edu.byu.model.domain.Status status : response.getFeedStatuses()) {
+                Drawable drawable;
 
-            try {
-                drawable = ImageUtils.drawableFromUrl(status.getAuthor().getImageUrl());
-            } catch (IOException e) {
-                Log.e(this.getClass().getName(), e.toString(), e);
-                drawable = null;
+                try {
+                    drawable = ImageUtils.drawableFromUrl(status.getAuthor().getImageUrl());
+                } catch (IOException e) {
+                    Log.e(this.getClass().getName(), e.toString(), e);
+                    drawable = null;
+                }
+
+                ImageCache.getInstance().cacheImage(status.getAuthor(), drawable);
             }
-
-            ImageCache.getInstance().cacheImage(status.getAuthor(), drawable);
         }
     }
 
