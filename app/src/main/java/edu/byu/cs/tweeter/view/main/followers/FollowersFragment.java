@@ -147,14 +147,16 @@ public class FollowersFragment extends Fragment implements FollowersPresenter.Vi
 
         @Override
         public void followersRetrieved(FollowersResponse followersResponse) {
-            List<User> followers = followersResponse.getFollowers();
+            if (followersResponse != null) {
+                List<User> followers = followersResponse.getFollowers();
 
-            lastFollower = (followers.size() > 0) ? followers.get(followers.size() -1) : null;
-            hasMorePages = followersResponse.getHasMorePages();
+                lastFollower = (followers.size() > 0) ? followers.get(followers.size() - 1) : null;
+                hasMorePages = followersResponse.getHasMorePages();
 
-            isLoading = false;
-            removeLoadingFooter();
-            followersRecyclerViewAdapter.addItems(followers);
+                isLoading = false;
+                removeLoadingFooter();
+                followersRecyclerViewAdapter.addItems(followers);
+            }
         }
 
         /**

@@ -18,7 +18,7 @@ public class Filler implements RequestHandler<Void, Void> {
 
     // The alias of the user to be followed by each user created
     // This example code does not add the target user, that user must be added separately.
-    private final static String FOLLOW_TARGET = "followed";
+    private final static String FOLLOW_TARGET = "@israel";
 
     @Override
     public Void handleRequest(Void input, Context context) {

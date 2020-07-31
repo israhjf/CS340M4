@@ -157,8 +157,7 @@ public class FeedDAO {
             SendMessageRequest send_msg_request = new SendMessageRequest()
                     .withQueueUrl(postStatusQueueUrl)
                     .withMessageBody(messageBody)
-                    .withMessageAttributes(messageAttributes)
-                    .withDelaySeconds(5);
+                    .withMessageAttributes(messageAttributes);
 
             AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
             SendMessageResult send_msg_result = sqs.sendMessage(send_msg_request);

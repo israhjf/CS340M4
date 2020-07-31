@@ -3,9 +3,12 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.MessageAttributeValue;
+import com.amazonaws.services.sqs.model.SendMessageBatchRequest;
+import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,7 @@ public class PostUpdateFeedMessagesServiceImpl {
         List<String> followersAliases = getFollowsDAO().getAllFollowersAliases(status_alias);
         String postStatusQueueUrl = "https://sqs.us-west-2.amazonaws.com/764200764125/UpdateFeedQueue";
 
+        List<SendMessageBatchRequestEntry> entriesList = new ArrayList<SendMessageBatchRequestEntry>();
         //Create UpdatefeedRequest and submit to UpdateFeedQueue
         for (String followerAlias : followersAliases) {
             System.out.println("PostUpdate LAMBDA follower alias: " + followerAlias);
@@ -48,17 +52,23 @@ public class PostUpdateFeedMessagesServiceImpl {
                         .withStringValue(followerAlias));
 
                 //Send Message
-                SendMessageRequest send_msg_request = new SendMessageRequest()
-                        .withQueueUrl(postStatusQueueUrl)
+                SendMessageBatchRequestEntry send_msg_request_entry = new SendMessageBatchRequestEntry()
                         .withMessageBody(message_text)
-                        .withMessageAttributes(messageAttributes)
-                        .withDelaySeconds(5);
+                        .withMessageAttributes(messageAttributes);
 
-                AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
-                SendMessageResult send_msg_result = sqs.sendMessage(send_msg_request);
+                entriesList.add(send_msg_request_entry);
 
-                String msgId = send_msg_result.getMessageId();
-                System.out.println("Message ID: " + msgId);
+                if (entriesList.size() >= 10){
+                    SendMessageBatchRequest send_batch_request = new SendMessageBatchRequest()
+                            .withQueueUrl(postStatusQueueUrl)
+                            .withEntries(entriesList);
+                    AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+                    sqs.sendMessageBatch(send_batch_request);
+                    entriesList.clear();
+                }
+
+                //String msgId = send_msg_result.getMessageId();
+                //System.out.println("Message ID: " + msgId);
                 System.out.println("PutItem on UpdateFeedQueue succeeded");
             } catch (Exception e) {
                 String message = String.format("Unable to add item for follower: " + followerAlias);
@@ -66,6 +76,13 @@ public class PostUpdateFeedMessagesServiceImpl {
                 System.err.println(e.getMessage());
             }
         }
+        //Last batch of entries
+        SendMessageBatchRequest send_batch_request = new SendMessageBatchRequest()
+                .withQueueUrl(postStatusQueueUrl)
+                .withEntries(entriesList);
+        AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+        sqs.sendMessageBatch(send_batch_request);
+        entriesList.clear();
     }
 
     FollowsDAO getFollowsDAO() {

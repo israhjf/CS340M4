@@ -157,14 +157,16 @@ public class FeedFragment extends Fragment implements FeedPresenter.View {
 
         @Override
         public void feedRetrieved(FeedResponse feedResponse) {
-            List<Status> feedStatuses = feedResponse.getFeedStatuses();
+            if (feedResponse != null) {
+                List<Status> feedStatuses = feedResponse.getFeedStatuses();
 
-            lastStatus = (feedStatuses.size() > 0) ? feedStatuses.get(feedStatuses.size() -1) : null;
-            hasMorePages = feedResponse.getHasMorePages();
+                lastStatus = (feedStatuses.size() > 0) ? feedStatuses.get(feedStatuses.size() - 1) : null;
+                hasMorePages = feedResponse.getHasMorePages();
 
-            isLoading = false;
-            removeLoadingFooter();
-            feedRecyclerViewAdapter.addItems(feedStatuses);
+                isLoading = false;
+                removeLoadingFooter();
+                feedRecyclerViewAdapter.addItems(feedStatuses);
+            }
         }
 
         /**
