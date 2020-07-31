@@ -22,6 +22,8 @@ public class PostUpdateFeedMessagesServiceImpl {
         final Map<String, SQSEvent.MessageAttribute> messageAttributesStatus;
         messageAttributesStatus = msg.getMessageAttributes();
 
+        final AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+
         String status_alias = messageAttributesStatus.get("status_alias").getStringValue();
         String status_timestamp = messageAttributesStatus.get("timestamp").getStringValue();
 
@@ -58,11 +60,10 @@ public class PostUpdateFeedMessagesServiceImpl {
 
                 entriesList.add(send_msg_request_entry);
 
-                if (entriesList.size() >= 10){
+                if (entriesList.size() >= 25){
                     SendMessageBatchRequest send_batch_request = new SendMessageBatchRequest()
                             .withQueueUrl(postStatusQueueUrl)
                             .withEntries(entriesList);
-                    AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
                     sqs.sendMessageBatch(send_batch_request);
                     entriesList.clear();
                 }
@@ -80,7 +81,6 @@ public class PostUpdateFeedMessagesServiceImpl {
         SendMessageBatchRequest send_batch_request = new SendMessageBatchRequest()
                 .withQueueUrl(postStatusQueueUrl)
                 .withEntries(entriesList);
-        AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
         sqs.sendMessageBatch(send_batch_request);
         entriesList.clear();
     }
