@@ -39,17 +39,19 @@ public class GetStoryTask extends AsyncTask<StoryRequest, Void, StoryResponse> {
     }
 
     private void loadImages(StoryResponse response) {
-        for(edu.byu.model.domain.Status status : response.getStoryStatuses()) {
-            Drawable drawable;
+        if (response != null) {
+            for (edu.byu.model.domain.Status status : response.getStoryStatuses()) {
+                Drawable drawable;
 
-            try {
-                drawable = ImageUtils.drawableFromUrl(status.getAuthor().getImageUrl());
-            } catch (IOException e) {
-                Log.e(this.getClass().getName(), e.toString(), e);
-                drawable = null;
+                try {
+                    drawable = ImageUtils.drawableFromUrl(status.getAuthor().getImageUrl());
+                } catch (IOException e) {
+                    Log.e(this.getClass().getName(), e.toString(), e);
+                    drawable = null;
+                }
+
+                ImageCache.getInstance().cacheImage(status.getAuthor(), drawable);
             }
-
-            ImageCache.getInstance().cacheImage(status.getAuthor(), drawable);
         }
     }
 

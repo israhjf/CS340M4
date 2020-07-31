@@ -56,21 +56,28 @@ public class PostUpdateFeedMessagesServiceImpl {
                 //Send Message
                 SendMessageBatchRequestEntry send_msg_request_entry = new SendMessageBatchRequestEntry()
                         .withMessageBody(message_text)
-                        .withMessageAttributes(messageAttributes);
+                        .withMessageAttributes(messageAttributes)
+                        .withId(status_alias);
+                System.out.println("PostUpdateLambda: created Entry succesful");
 
                 entriesList.add(send_msg_request_entry);
 
-                if (entriesList.size() >= 25){
+                if (entriesList.size() >= 10){
+                    System.out.println("PosUpdateLambda: entireslist.size() : " + entriesList.size());
+                    List<SendMessageBatchRequestEntry> tmpEntriesList = new ArrayList<SendMessageBatchRequestEntry>();
+                    tmpEntriesList.addAll(entriesList);
+                    entriesList.clear();
+
                     SendMessageBatchRequest send_batch_request = new SendMessageBatchRequest()
                             .withQueueUrl(postStatusQueueUrl)
-                            .withEntries(entriesList);
+                            .withEntries(tmpEntriesList);
                     sqs.sendMessageBatch(send_batch_request);
-                    entriesList.clear();
+                    System.out.println("PostUpdateLamda: SENT entries batch succesful.");
+                    System.out.println("PutItem on UpdateFeedQueue succeeded");
                 }
 
                 //String msgId = send_msg_result.getMessageId();
                 //System.out.println("Message ID: " + msgId);
-                System.out.println("PutItem on UpdateFeedQueue succeeded");
             } catch (Exception e) {
                 String message = String.format("Unable to add item for follower: " + followerAlias);
                 System.err.println(message);
@@ -83,6 +90,7 @@ public class PostUpdateFeedMessagesServiceImpl {
                 .withEntries(entriesList);
         sqs.sendMessageBatch(send_batch_request);
         entriesList.clear();
+        System.out.println("PutItem on UpdateFeedQueue succeeded");
     }
 
     FollowsDAO getFollowsDAO() {

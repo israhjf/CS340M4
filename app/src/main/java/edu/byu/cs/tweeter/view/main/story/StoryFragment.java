@@ -156,14 +156,16 @@ public class StoryFragment extends Fragment implements StoryPresenter.View {
 
         @Override
         public void storyRetrieved(StoryResponse storyResponse) {
-            List<Status> storyStatuses = storyResponse.getStoryStatuses();
+            if (storyResponse != null) {
+                List<Status> storyStatuses = storyResponse.getStoryStatuses();
 
-            lastStatus = (storyStatuses.size() > 0) ? storyStatuses.get(storyStatuses.size() -1) : null;
-            hasMorePages = storyResponse.getHasMorePages();
+                lastStatus = (storyStatuses.size() > 0) ? storyStatuses.get(storyStatuses.size() - 1) : null;
+                hasMorePages = storyResponse.getHasMorePages();
 
-            isLoading = false;
-            removeLoadingFooter();
-            storyRecyclerViewAdapter.addItems(storyStatuses);
+                isLoading = false;
+                removeLoadingFooter();
+                storyRecyclerViewAdapter.addItems(storyStatuses);
+            }
         }
 
         /**
